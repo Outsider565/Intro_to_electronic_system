@@ -12,4 +12,5 @@
 密码：eelab123456
 
 ### git仓库
+git@github.com:Outsider565/Intro_to_electronic_system.git
 不要使用force-push!
