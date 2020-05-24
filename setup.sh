@@ -16,3 +16,6 @@ cat id_rsa.pub
 echo "打开github.com，设置git即可"
 read -p "设置好后按enter继续"
 pip3 install wiringpi
+echo "export PATH=\"$PATH:/usr/sbin\"">>~/.zshrc
+echo "export PATH=\"$PATH:/sbin\"">>~/.zshrc
+echo "alias python=\"/usr/bin/python3\"">>~/.zshrc
