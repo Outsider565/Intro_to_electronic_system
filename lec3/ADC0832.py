@@ -41,14 +41,16 @@ def setup(cs=17,clk=18,dio=27): #11,12,13
 
 def destroy():
 	GPIO.cleanup()
-
 # using channel = 0 as default for backwards compatibility
-def getResult(channel=0):					# Get ADC result, input channal
+
+	
+
+def getResult_original(channel=0):					# Get ADC result, input channal
 	GPIO.setup(ADC_DIO, GPIO.OUT)
 	GPIO.output(ADC_CS, 0)
 		
 	GPIO.output(ADC_CLK, 0)
-	GPIO.output(ADC_DIO, 1); wiringpi.delayMicroseconds(2)
+	GPIO.output(ADC_DIO, 1);  wiringpi.delayMicroseconds(2)
 	GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(2)
 	GPIO.output(ADC_CLK, 0)
 
@@ -75,6 +77,47 @@ def getResult(channel=0):					# Get ADC result, input channal
 		dat2 = dat2 | GPIO.input(ADC_DIO) << i
 		GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(2)
 		GPIO.output(ADC_CLK, 0);  wiringpi.delayMicroseconds(2)
+	
+	GPIO.output(ADC_CS, 1)
+	GPIO.setup(ADC_DIO, GPIO.OUT)
+
+	if dat1 == dat2:
+		return dat1
+	else:
+		return 0
+
+def getResult(channel=0):					# Get ADC result, input channal
+	GPIO.setup(ADC_DIO, GPIO.OUT)
+	GPIO.output(ADC_CS, 0)
+		
+	GPIO.output(ADC_CLK, 0)
+	GPIO.output(ADC_DIO, 1);  wiringpi.delayMicroseconds(20)
+	GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(20)
+	GPIO.output(ADC_CLK, 0)
+
+	GPIO.output(ADC_DIO, 1);  wiringpi.delayMicroseconds(20)
+	GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(20)
+	GPIO.output(ADC_CLK, 0)
+
+	GPIO.output(ADC_DIO, channel);	wiringpi.delayMicroseconds(20)
+
+	GPIO.output(ADC_CLK, 1)
+	GPIO.output(ADC_DIO, 1);  wiringpi.delayMicroseconds(20)
+	GPIO.output(ADC_CLK, 0)
+	GPIO.output(ADC_DIO, 1);  wiringpi.delayMicroseconds(20)
+
+	dat1 = 0
+	for i in range(0, 8):
+		GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(20)
+		GPIO.output(ADC_CLK, 0);  wiringpi.delayMicroseconds(20)
+		GPIO.setup(ADC_DIO, GPIO.IN)
+		dat1 = dat1 << 1 | GPIO.input(ADC_DIO)	
+	
+	dat2 = 0
+	for i in range(0, 8):
+		dat2 = dat2 | GPIO.input(ADC_DIO) << i
+		GPIO.output(ADC_CLK, 1);  wiringpi.delayMicroseconds(20)
+		GPIO.output(ADC_CLK, 0);  wiringpi.delayMicroseconds(20)
 	
 	GPIO.output(ADC_CS, 1)
 	GPIO.setup(ADC_DIO, GPIO.OUT)
