@@ -17,7 +17,12 @@
 ### git仓库
 
 git@github.com:Outsider565/Intro_to_electronic_system.git
+
 不要使用force-push!
+
+该怎么使用git?下载github客户端，地址 https://desktop.github.com
+
+之后clone下来就好了，如果想学习Github，可以参考 https://www.runoob.com/w3cnote/git-guide.html
 
 ### 课程FTP
 
