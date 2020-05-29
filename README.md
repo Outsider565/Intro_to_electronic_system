@@ -21,4 +21,4 @@ git@github.com:Outsider565/Intro_to_electronic_system.git
 
 ### 课程FTP
 
-校内网登陆:[ftp address](ftp://10.48.76.8/pub/Courses/IES "ftp address")
+校内网登陆: ftp://10.48.76.8/pub/Courses/IES 
