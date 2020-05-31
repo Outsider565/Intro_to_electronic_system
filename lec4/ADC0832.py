@@ -83,6 +83,7 @@ def getResult(channel=0):					# Get ADC result, input channal
 		return dat1
 	else:
 		return 0
+	#Time: 7+4*16=71us=0.1ms
 
 def getResult1():
 	return getResult(1)

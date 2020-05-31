@@ -3,7 +3,7 @@ import DAC_TLC5620 as DAC
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-#import wiringpi
+import wiringpi
 MAX=220
 MIN=10
 
@@ -43,7 +43,7 @@ def I_lwFunc(x):
     return MIN
 
 def blank(x):
-    return 0
+    return MIN
 
 def U_upFunc(x):
     x=x*2-1
@@ -62,28 +62,39 @@ def U_lwFunc(x):
         return x**2*MAX*0.3
 
 def ILOVEU_upFunc(x):
-    if x<1/3:
-        return I_upFunc(x*3)
-    elif x<2/3:
-        return heart_upFunc(x*3-1)
+    if x<1/5:
+        return blank(x)
+    elif x<2/5:
+        return I_upFunc(5*x-1)
+    elif x<3/5:
+        return heart_upFunc(x*5-2)
+    elif x<4/5:
+        return U_upFunc(x*5-3)
     else:
-        return U_upFunc(x*3-2)
+        return blank(x)
 
 def ILOVEU_lwFunc(x):
-    if x<1/3:
-        return I_lwFunc(x*3)
-    elif x<2/3:
-        return heart_lwFunc(x*3-1)
+    if x<1/5:
+        return blank(x)
+    elif x<2/5:
+        return I_lwFunc(5*x-1)
+    elif x<3/5:
+        return heart_lwFunc(x*5-2)
+    elif x<4/5:
+        return U_lwFunc(x*5-3)
     else:
-        return U_lwFunc(x*3-2)
+        return blank(x)
+
 
 def outputGraph(graph,time):
-    for i in graph:
-        DAC.SendOneData(i)
-        wiringpi.delayMicroseconds(2)
+    while 1:
+        for i in graph:
+            DAC.SendOneData(i)
+            wiringpi.delayMicroseconds(time)
 
 if __name__ == "__main__":
-
+    DAC.setup()
     res=getGraph(ILOVEU_upFunc,ILOVEU_lwFunc,1000)
-    plt.plot(np.linspace(0,1,1000),res)
-    plt.show()
+    outputGraph(res,2)
+    #plt.plot(np.linspace(0,1,1000),res)
+   # plt.show()

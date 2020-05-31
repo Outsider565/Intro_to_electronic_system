@@ -10,7 +10,7 @@ def init():
     DAC.setup()
     
 def loop():
-    fft_size=256      # 256-point FFT
+    fft_size=1024      # 256-point FFT
     sampl_freq=4500   # Sampling frequency is 4500Hz
     freq_low=0    # Lower cut-off frequency
     freq_high=1000      # Upper cut-off frequency
@@ -96,7 +96,7 @@ def loop():
                 if tmp>0:
                     wiringpi.delayMicroseconds(tmp)
                     
-            DAC.SendOneData(int(smooth[i]*246/3.3))
+            DAC.SendOneData(int(smooth[i]*200/3.3))
             i=i+1
         if output_count==1:
             t=time.time()-t    # 256_point sampling    

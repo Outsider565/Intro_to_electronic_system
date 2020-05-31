@@ -10,10 +10,10 @@ def init():
     DAC.setup()
     
 def loop():
-    fft_size=256      # 256-point FFT
-    sampl_freq=4500   # Sampling frequency is 4500Hz
-    freq_low=0    # Lower cut-off frequency
-    freq_high=1000      # Upper cut-off frequency
+    fft_size=1024       # 256-point FFT
+    sampl_freq=10000    # Sampling frequency is 4500Hz
+    freq_low=245      # Lower cut-off frequency
+    freq_high=255      # Upper cut-off frequency
     n=0
     y=[]
     t_sample=1/sampl_freq
@@ -62,9 +62,7 @@ def loop():
     smooth_org=np.fft.ifft(smooth_fft)   # Fourier inversion
     smooth_fft_ampl=np.abs(smooth_fft)   # Amplitude spectrum
     smooth=np.abs(smooth_org)
-    output_count=0
 
-    print(smooth)        
     plt.figure(figsize=(8,4))
     plt.subplot(221)
     plt.plot(x,y)
@@ -83,6 +81,9 @@ def loop():
     plt.subplots_adjust(hspace=0.4)
     plt.show()
 
+    
+    
+    output_count=0
     while 1:    # Output signal
         output_count+=1
         i=0
@@ -95,15 +96,14 @@ def loop():
                 tmp=int(1000000*(t_sample*(i+1) - dt))
                 if tmp>0:
                     wiringpi.delayMicroseconds(tmp)
-                    
-            DAC.SendOneData(int(smooth[i]*246/3.3))
+                
+            DAC.SendOneData(int(smooth[i]*255/3.3))
             i=i+1
         if output_count==1:
             t=time.time()-t    # 256_point sampling    
             dac_freq= fft_size/t # Calculate the actual sampling freq.
             print("real dac_freq: %d" % dac_freq)
-    
-
+            
 
 if __name__=='__main__':
     try:
