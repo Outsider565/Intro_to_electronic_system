@@ -33,12 +33,11 @@ def readkey(getchar_fn=None):
 EA, I2, I1, EB, I4, I3 = (13, 19, 26, 16, 20, 21)
 FREQUENCY = 60
 A_LOW_SPEED = 20
-B_LOW_SPEED = 24.5
-A_HIGH_SPEED = 55
-B_HIGH_SPPED = 60
-DUTYS_A = [{'w': A_LOW_SPEED, 'd': 0, 's': 0, 'a': A_LOW_SPEED},
-    {'w': A_HIGH_SPEED, 'd': 0, 's': 0, 'a': A_HIGH_SPEED}]  # 右侧
-DUTYS_B = [{'w': B_LOW_SPEED, 'd': B_LOW_SPEED, 's': 0, 'a': 0}, {'w': B_HIGH_SPPED, 'd': B_HIGH_SPPED, 's': 0, 'a': 0}]  # 左侧
+B_LOW_SPEED = 23
+A_HIGH_SPEED = 100
+B_HIGH_SPPED = 100
+DUTYS_A = {'w': A_LOW_SPEED, 'd': 0, 's': 0, 'a': A_LOW_SPEED}  # 右侧
+DUTYS_B = {'w': B_LOW_SPEED, 'd': B_LOW_SPEED, 's': 0, 'a': 0}  # 左侧
 EXPRESSIONS = {'w': 'move forward!',
                'd': 'turn left!',
                's': 'stop!',
@@ -46,46 +45,69 @@ EXPRESSIONS = {'w': 'move forward!',
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([EA, I2, I1, EB, I4, I3], GPIO.OUT)
-GPIO.output([EA, I2, EB, I3], GPIO.LOW)
-GPIO.output([I1, I4], GPIO.HIGH)
-r_mod=0
+GPIO.output([EA, I1, EB, I4], GPIO.LOW)
+GPIO.output([I2, I3], GPIO.HIGH)
+r_mod = 1
 pwma = GPIO.PWM(EA, FREQUENCY)
 pwmb = GPIO.PWM(EB, FREQUENCY)
-pwma.start(DUTYS_A[0]['s'])
-pwmb.start(DUTYS_B[0]['s'])
+pwma.start(DUTYS_A['s'])
+pwmb.start(DUTYS_B['s'])
 print("ready!")
-
+prev_cmd='s'
+cmd='s'
 while True:
     try:
+
         cmd = readkey()
-        speed_mode= 0# 低速档
         print(cmd)
-        if cmd=='r':
-            if(r_mod==0):
+        if cmd == 'r':
+            if(r_mod == 0):
                 print("In reversed mode")
-                GPIO.output([EA, I1, EB, I4], GPIO.LOW)
+                GPIO.output([I1, I4], GPIO.LOW)
                 GPIO.output([I2, I3], GPIO.HIGH)
-                r_mod=1
+                r_mod = 1
             else:
                 print("In normal mode")
-                GPIO.output([EA, I2, EB, I3], GPIO.LOW)
+                GPIO.output([I2, I3], GPIO.LOW)
                 GPIO.output([I1, I4], GPIO.HIGH)
-                r_mod=0
-        if cmd == 'q' or ord(cmd) == 0x03:
+                r_mod = 0
+            prev_cmd='s'
+        elif cmd == 'q' or ord(cmd) == 0x03:
             pwma.stop()
             pwmb.stop()
             GPIO.cleanup()
             break
-        if cmd == 'h':
-            print("High speed")
-            speed_mode= 1
-        elif cmd == 'l':
-            print("Low speed")
-            speed_mode= 0
-        if (cmd == 'w') or (cmd == 'a') or (cmd == 's') or (cmd == 'd'):
-            pwma.ChangeDutyCycle(DUTYS_A[speed_mode][cmd])
-            pwmb.ChangeDutyCycle(DUTYS_B[speed_mode][cmd])
+        elif cmd == 'j':
+            if(DUTYS_A['w'] == 0):
+                DUTYS_A['w'] =A_LOW_SPEED
+                DUTYS_B['w'] =B_LOW_SPEED
+            elif(DUTYS_A['w'] <= 60):
+                DUTYS_A['w'] += 20
+                DUTYS_B['w'] += 20
+            else:
+                DUTYS_A['w'] = 100
+                DUTYS_B['w'] = 100
+            pwma.ChangeDutyCycle(DUTYS_A[prev_cmd])
+            pwmb.ChangeDutyCycle(DUTYS_B[prev_cmd])
+            print("Speed: ", DUTYS_A['w'], DUTYS_B['w'])
+            prev_cmd='s'
+        elif cmd == 'k':
+            if(DUTYS_A['w'] > 20):
+                DUTYS_A['w'] -= 20
+                DUTYS_B['w'] -= 20
+            else:
+                DUTYS_A['w'] = 0
+                DUTYS_B['w'] = 0
+                
+            pwma.ChangeDutyCycle(DUTYS_A[prev_cmd])
+            pwmb.ChangeDutyCycle(DUTYS_B[prev_cmd])
+            print("Speed: ", DUTYS_A['w'], DUTYS_B['w'])
+            prev_cmd='s'
+        elif (cmd == 'w') or (cmd == 'a') or (cmd == 's') or (cmd == 'd'):
+            pwma.ChangeDutyCycle(DUTYS_A[cmd])
+            pwmb.ChangeDutyCycle(DUTYS_B[cmd])
             print(EXPRESSIONS[cmd])
+            prev_cmd=cmd
         else:
             pass
     except KeyboardInterrupt:
