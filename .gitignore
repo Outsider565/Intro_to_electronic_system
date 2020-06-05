@@ -132,4 +132,7 @@ dmypy.json
 .vscode/
 
 # DS_STORE
-.DS_Store
+*.DS_Store
+
+# ppt
+*.pptx
