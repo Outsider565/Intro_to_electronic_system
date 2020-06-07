@@ -83,7 +83,7 @@ def test_temp():
         getter.free()
     finally:
         array=np.array(disList)
-        print("mean: {:.2f}".format(vArray.mean()))
+        print("mean: {:.2f}".format(disList.mean()))
         print("over")
 if __name__ == "__main__":
     test_speed(plot=True)
