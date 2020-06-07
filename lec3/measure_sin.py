@@ -11,7 +11,7 @@ def loop():
     x=[]
     t_0=time.perf_counter()
     t_now=0
-    while t_now<10:
+    while t_now<0.1:
         digitalVal=ADC0832.getResult_original()
         y.append(3.3*float(digitalVal)/255)
         t_now=time.perf_counter()-t_0
