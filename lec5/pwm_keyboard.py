@@ -90,7 +90,6 @@ while True:
             pwma.ChangeDutyCycle(DUTYS_A[prev_cmd])
             pwmb.ChangeDutyCycle(DUTYS_B[prev_cmd])
             print("Speed: ", DUTYS_A['w'], DUTYS_B['w'])
-            prev_cmd='s'
         elif cmd == 'k':
             if(DUTYS_A['w'] > 20):
                 DUTYS_A['w'] -= 20
@@ -102,7 +101,6 @@ while True:
             pwma.ChangeDutyCycle(DUTYS_A[prev_cmd])
             pwmb.ChangeDutyCycle(DUTYS_B[prev_cmd])
             print("Speed: ", DUTYS_A['w'], DUTYS_B['w'])
-            prev_cmd='s'
         elif (cmd == 'w') or (cmd == 'a') or (cmd == 's') or (cmd == 'd'):
             pwma.ChangeDutyCycle(DUTYS_A[cmd])
             pwmb.ChangeDutyCycle(DUTYS_B[cmd])
