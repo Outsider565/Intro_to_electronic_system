@@ -32,7 +32,7 @@ while True:
         break
     elif (cmd=='w') or (cmd=='a') or (cmd=='s') or (cmd=='d'):
         pwma.ChangeDutyCycle(DUTYS_A[cmd])
-        pwmb.ChangeDutyCycle(DUTYS_B[cmd])
+        #pwmb.ChangeDutyCycle(DUTYS_B[cmd])
         print(EXPRESSIONS[cmd])
     else:
         pass
