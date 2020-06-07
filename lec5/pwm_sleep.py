@@ -7,7 +7,7 @@ import time
 GPIO.setmode(GPIO.BCM)
 PWM = 21
 FREQUENCY = 40
-DUTY = 0.4
+DUTY = 1
 GPIO.setup(PWM, GPIO.OUT)
 
 # don't use too large freq

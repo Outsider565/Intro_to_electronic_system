@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import wiringpi
 EA, I2, I1, EB, I4, I3 = (13, 19, 26, 16, 20, 21)  # 设置端口号
 FREQUENCY = 64
 
