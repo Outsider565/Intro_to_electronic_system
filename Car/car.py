@@ -2,6 +2,8 @@ import RPi.GPIO as GPIO
 import time
 import wiringpi
 import threading
+from threading import Lock
+import logging
 EA, I2, I1, EB, I4, I3, LS, RS = (13, 19, 26, 16, 20, 21, 6, 12)
 FREQUENCY = 50
 
@@ -9,7 +11,7 @@ FREQUENCY = 50
 class Car_Basis:
     l_counter = 0
     r_counter = 0
-
+    data_lock = Lock()
     def __init__(self, log=True):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([EA, I2, I1, EB, I4, I3], GPIO.OUT)
@@ -27,28 +29,31 @@ class Car_Basis:
     @staticmethod
     def change_counter(channel):
         if (channel == LS):
-            Car_Basis.lcounter += 1
+            Car_Basis.l_counter += 1
         elif(channel == RS):
-            Car_Basis.rcounter += 1
+            Car_Basis.r_counter += 1
+
 
     @staticmethod
-    def update_speed(flag,period):
+    def update_speed(period,speed_dict):
+        Car_Basis.data_lock.acquire()
         Car_Basis.l_counter = 0
         Car_Basis.r_counter = 0
         GPIO.add_event_detect(
             LS, GPIO.RISING, callback=Car_Basis.change_counter)
         GPIO.add_event_detect(
             RS, GPIO.RISING, callback=Car_Basis.change_counter)
-        while not flag.isSet():
-            Car_Basis.speed_dict['l'] = Car_Basis.l_counter/period
-            Car_Basis.speed_dict['r'] = Car_Basis.r_counter/period
-            Car_Basis.l_counter = 0
-            Car_Basis.r_counter = 0
-            wiringpi.delay(period)
+        wiringpi.delay(period)
+        speed_dict['l'] = Car_Basis.l_counter/period
+        speed_dict['r'] = Car_Basis.r_counter/period
+        Car_Basis.data_lock.release()
         
     def get_speed(self,period=100):
-        flag=threading.Event()
-        speed_updater=threading.Thread(target=Car_Basis.update_speed,args=(flag,))
+        speed_updater=threading.Thread(target=Car_Basis.update_speed,args=(int(0.8*period),self.speed))
+        speed_updater.start()
+        wiringpi.delay(period)
+        return self.speed
+        
 
     def set_left_power(self, val):
         assert 0 <= val <= 100
@@ -108,7 +113,5 @@ class Car():
 
 if __name__ == "__main__":
     c = Car_Basis()
-    c.set_left_power(100)
-    c.set_right_power(100)
-    c.stay(200)
+    print(c.get_speed(2000))
     c.free()
