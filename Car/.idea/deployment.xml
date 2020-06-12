@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="pi@192.168.1.71:22">
+    <serverData>
+      <paths name="pi@192.168.1.253:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/pi/CarCode" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@192.168.1.253:22 (1)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/pi" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@192.168.1.253:22 (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/pi/CarCode" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@192.168.1.71:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/pi/CarCode" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
