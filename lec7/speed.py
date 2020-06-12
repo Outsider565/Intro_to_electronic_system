@@ -60,11 +60,11 @@ while i<=20:
     y2.append(rspeed)
     i=i+1
     		
-#plt.plot(x,y1,'-o')
-#plt.plot(x,y2,'-*')
+plt.plot(x,y1,'-o')
+plt.plot(x,y2,'-*')
 print(x,y1)
 print(x,y2)
 pwma.stop()
 pwmb.stop()
 GPIO.cleanup()
-#plt.show()
+plt.show()

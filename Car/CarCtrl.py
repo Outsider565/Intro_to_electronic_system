@@ -67,7 +67,7 @@ class CarCtrl:
             self.basis.get_r_power()))
         print("p: " + "{:.2f}".format(self.get_p_diff()) + "\ti: " + "{:.2f}".format(
             self.get_i_diff()) + "\td: " + "{:.2f}".format(self.get_d_diff()))
-        print("dist: ",self.basis.get_distance())
+        print("dist: ",self.basis.get_distance_2())
 
     @staticmethod
     def stay(t):
@@ -80,9 +80,12 @@ if __name__ == '__main__':
     try:
         c = CarCtrl()
         c.start()
+        c.set_r_mode()
+        c.set_speed(70)
+        c.stay(1)
+        c.set_speed(100)
         c.set_expected_diff(0)
-
-        c.stay(3)
+        c.stay(10)
         #c.set_r_mode()
         #c.stay(3)
         # c.set_expected_diff()

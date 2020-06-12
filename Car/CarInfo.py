@@ -42,8 +42,6 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
     def __record_distance(self):
         while not self.__end_flag.is_set():
             self.dist_list.append(self.get_distance())
-            wiringpi.delay(int(1000 * self.period))
-            print(self.get_time())
 
     def __init_record_power(self):
         record_thread = threading.Thread(target=self.__record_power)
@@ -94,8 +92,7 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
     def get_time(self):
         return time.perf_counter() - self.t0
 
-    def get_distance(self):
-        print(self.dist_list)
+    def get_distance_2(self):
         if len(self.dist_list) == 0:
             return 0
         else:

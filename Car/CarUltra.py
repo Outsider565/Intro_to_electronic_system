@@ -17,7 +17,7 @@ class CarUltra:
 
     def get_distance(self):
         self.bus.write_byte_data(self.addr, 0x2, self.wr_cmd)
-        wiringpi.delay(10*int(1000*self.period))
+        wiringpi.delay(100)
         high_byte, LowByte = self.bus.read_byte_data(
             self.addr, 0x2), self.bus.read_byte_data(self.addr, 0x3)
         return (high_byte << 8) + LowByte

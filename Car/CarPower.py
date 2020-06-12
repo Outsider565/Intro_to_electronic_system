@@ -26,11 +26,11 @@ class CarPower:
         if val < 0:
             GPIO.output(I1, GPIO.LOW)
             GPIO.output(I2, GPIO.HIGH)
-            self.pwm_left.ChangeDutyCycle(-1 * val - L_COMPENSATOR)
+            self.pwm_left.ChangeDutyCycle(max(-1 * val - L_COMPENSATOR,0))
         else:
             GPIO.output(I2, GPIO.LOW)
             GPIO.output(I1, GPIO.HIGH)
-            self.pwm_left.ChangeDutyCycle(val - L_COMPENSATOR)
+            self.pwm_left.ChangeDutyCycle(max(val - L_COMPENSATOR,0))
         self.left_power = val
 
     def set_right_power(self, val):
