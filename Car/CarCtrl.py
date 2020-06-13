@@ -8,7 +8,7 @@ class CarCtrl:
         self.period = period
         self.basis = CarInfo.CarInfo(period)
         self.expected_diff = diff
-        self.speed = speed
+        self.power = speed
         self.bias = 0
         self.kp = kp
         self.ki = ki
@@ -18,15 +18,15 @@ class CarCtrl:
     def set_expected_diff(self, val):
         self.expected_diff = val
 
-    def set_speed(self, val):
-        self.speed = val
+    def set_power(self, val):
+        self.power = val
 
     def get_p_diff(self, t=None):
         return (self.basis.get_r_round(t) - self.basis.get_l_round(t) - self.expected_diff) * self.kp
 
     def get_i_diff(self):
         self.basis.update_speed_and_round()
-        if len(self.basis.r_round)==0:
+        if len(self.basis.r_round) == 0:
             return - self.expected_diff
         else:
             return ((np.array(self.basis.r_round).sum() - np.array(
@@ -47,8 +47,8 @@ class CarCtrl:
 
     def __run(self):
         while not self.__end_flag.isSet():
-            self.basis.set_left_power(max(self.speed + min(self.get_diff(), 0), 0))
-            self.basis.set_right_power(max(self.speed - max(self.get_diff(), 0), 0))
+            self.basis.set_left_power(max(self.power + min(self.get_diff(), 0), 0))
+            self.basis.set_right_power(max(self.power - max(self.get_diff(), 0), 0))
             self.print_info()
             self.basis.stay(self.period)
 
@@ -67,7 +67,10 @@ class CarCtrl:
             self.basis.get_r_power()))
         print("p: " + "{:.2f}".format(self.get_p_diff()) + "\ti: " + "{:.2f}".format(
             self.get_i_diff()) + "\td: " + "{:.2f}".format(self.get_d_diff()))
-        print("dist: ",self.basis.get_distance_2())
+        print("dist: ", self.basis.get_distance())
+
+    def get_distance(self, index=0):
+        return self.basis.get_distance(index)
 
     @staticmethod
     def stay(t):
@@ -76,18 +79,18 @@ class CarCtrl:
     def set_r_mode(self):
         self.basis.set_r_mode()
 
+
 if __name__ == '__main__':
     try:
         c = CarCtrl()
         c.start()
-        c.set_r_mode()
-        c.set_speed(70)
+        c.set_power(70)
         c.stay(1)
-        c.set_speed(100)
+        c.set_power(100)
         c.set_expected_diff(0)
-        c.stay(10)
-        #c.set_r_mode()
-        #c.stay(3)
+        c.stay(3)
+        # c.set_r_mode()
+        # c.stay(3)
         # c.set_expected_diff()
         c.stop()
     except:
