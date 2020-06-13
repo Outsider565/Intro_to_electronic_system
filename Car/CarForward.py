@@ -30,7 +30,7 @@ class DiffList:
         return np.abs(np.array(self.lst)).mean()
 
     def if_valid(self, val):
-        if abs(val) < FACTOR * self.__mean_abs() or len(self.lst) < 5:
+        if len(self.lst) < 5 or abs(val) <= FACTOR * self.__mean_abs():
             return True
         else:
             return False
@@ -38,7 +38,7 @@ class DiffList:
     def get_val(self):
         if len(self.lst) == 0:
             return 0
-        if len(self.lst) < 5:
+        if len(self.lst) <= 5:
             return np.array(self.lst).mean()
         else:
             return np.array(self.lst[:-5]).mean()
@@ -51,10 +51,12 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=12, ki=0.1):
+    def __init__(self, period=0.1, kp=0.1, ki=0.001,speed=100):
         self.car = CarCtrl.CarCtrl(speed=0)
+        self.car.start()
         self.kp = kp
         self.ki = ki
+        self.speed=speed
         print("Wait 0.8 second for initiation")
         # TODO:或许可以先把马达开到0.2预热啥的...
         # self.car.set_power(10)
@@ -72,24 +74,32 @@ class CarForward:
             wiringpi.delay(int(1000 * self.period))
 
     def __init_record_diff_list(self):
-        diff_list_thread = threading.Thread(target=self.update_diff_list())
+        diff_list_thread = threading.Thread(target=self.update_diff_list)
         diff_list_thread.start()
 
     def __init_run(self):
-        run_thread = threading.Thread(target=self.run())
+        run_thread = threading.Thread(target=self.run)
         run_thread.start()
 
     def run(self):
         try:
-            self.car.set_power(100)
+            self.car.set_power(self.speed)
             while not self.__end_flag.isSet():
                 bias = self.kp * self.diff_list.get_val() + self.ki * (self.base_distance - self.car.get_distance())
+                print("set bias as: ", bias)
                 self.car.set_expected_diff(bias)
                 self.car.stay(0.1)
         except:
             self.stop()
 
+    def stay(self,t):
+        self.car.stay(t)
+
     def stop(self):
         self.__end_flag.set()
         self.car.stop()
 
+if __name__ == '__main__':
+    f = CarForward(speed=0)
+    f.stay(1)
+    f.stop()

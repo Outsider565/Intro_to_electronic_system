@@ -83,7 +83,7 @@ class CarSpeed:
         elif time_list[-1] + self.period > t >= time_list[-1]:
             index = (len(time_list) - 1 - length, len(time_list) - 1)
             i_range = 0
-            t1 = time_list[index[0]]
+            t1 = time_list[max(index[0],0)]
             t2 = t
         else:
             index = self.__get_time_index(time_list, t)

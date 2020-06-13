@@ -9,7 +9,7 @@ import wiringpi
 DIRECTORY = '/home/pi/CarData/raw'
 
 
-class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
+class CarInfo(power.CarPower, speed.CarSpeed):
     def __init__(self, period=0.05):
         """
         这是用于获取和记录小车信息的类
@@ -18,7 +18,7 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
         self.t0 = time.perf_counter()
         power.CarPower.__init__(self)
         speed.CarSpeed.__init__(self, t0=self.t0)
-        ultra.CarUltra.__init__(self, period=period)
+        self.ultra_getter=ultra.CarUltra(period=0.1)
         self.period = period
         self.l_speed = []
         self.r_speed = []
@@ -41,7 +41,7 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
 
     def __record_distance(self):
         while not self.__end_flag.is_set():
-            self.dist_list.append(self.get_raw_distance())
+            self.dist_list.append(self.ultra_getter.get_raw_distance())
 
     def __init_record_power(self):
         record_thread = threading.Thread(target=self.__record_power)
@@ -96,7 +96,7 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
         if len(self.dist_list) <= index:
             return 0
         else:
-            return self.dist_list[-1*index]
+            return self.dist_list[len(self.dist_list)-1-index]
 
 
 def gen_raw_data():

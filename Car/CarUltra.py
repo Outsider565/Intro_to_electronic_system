@@ -9,7 +9,7 @@ LIGHT = 0xa0
 
 
 class CarUltra:
-    def __init__(self, address=0x74, wr_cmd=DISTANCE_WITH_TEMP,period=0.1):
+    def __init__(self, address=0x74, wr_cmd=DISTANCE_WITH_TEMP, period=0.1):
         self.addr = address
         self.wr_cmd = wr_cmd
         self.bus = smbus.SMBus(1)
@@ -35,6 +35,6 @@ class CarUltra:
 if __name__ == '__main__':
     addr=0x74
     c=CarUltra(period=0.1)
-    for i in range(10):
+    for i in range(100):
         print(c.get_raw_distance())
     c.free()

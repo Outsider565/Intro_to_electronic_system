@@ -1,9 +1,11 @@
 import RPi.GPIO as GPIO
 import wiringpi
 
-EA, I2, I1, EB, I4, I3 = (13, 19, 26, 16, 20, 21)
+EA, I2, I1, EB, I4, I3 = (13, 20, 21, 16, 19, 26)
 FREQUENCY = 200
 L_COMPENSATOR = 2
+
+
 # TODO: 加上切换左右的开关，设置好接口来后驱，这里千万不要出问题了
 
 class CarPower:
@@ -65,7 +67,7 @@ class CarPower:
         GPIO.cleanup()
 
     @staticmethod
-    def set_r_mode(self):
+    def set_r_mode():
         print("warning in R mode")
         global I1, I2, I3, I4
         I1, I2 = I2, I1
@@ -75,6 +77,6 @@ class CarPower:
 if __name__ == '__main__':
     c = CarPower()
     c.set_left_power(100)
-    c.set_right_power(100)
-    c.stay(2)
+    # c.set_right_power(100)
+    c.stay(19)
     c.free()
