@@ -47,10 +47,17 @@ class CarCtrl:
 
     def __run(self):
         while not self.__end_flag.isSet():
-            self.basis.set_left_power(max(self.power + min(self.get_diff(), 0), 0))
-            self.basis.set_right_power(max(self.power - max(self.get_diff(), 0), 0))
-            self.print_info()
-            self.basis.stay(self.period)
+            try:
+                self.basis.set_left_power(max(self.power + min(self.get_diff(), 0), 0))
+                self.basis.set_right_power(max(self.power - max(self.get_diff(), 0), 0))
+                self.print_info()
+                self.basis.stay(self.period)
+            except Exception as e:
+                self.basis.set_left_power(100)
+                self.basis.set_right_power(100)
+                print("Run into exception: "+str(e))
+                self.print_info()
+                self.basis.stay(self.period)
 
     def start(self):
         run_thread = threading.Thread(target=self.__run)
@@ -67,7 +74,7 @@ class CarCtrl:
             self.basis.get_r_power()))
         print("p: " + "{:.2f}".format(self.get_p_diff()) + "\ti: " + "{:.2f}".format(
             self.get_i_diff()) + "\td: " + "{:.2f}".format(self.get_d_diff()))
-        print("dist: ", self.basis.get_distance())
+        print("dist: ", self.get_distance())
 
     def get_distance(self, index=0):
         return self.basis.get_distance(index)
@@ -84,11 +91,9 @@ if __name__ == '__main__':
     try:
         c = CarCtrl()
         c.start()
-        c.set_power(70)
-        c.stay(1)
-        c.set_power(100)
+        c.set_power(0)
         c.set_expected_diff(0)
-        c.stay(3)
+        c.stay(5)
         # c.set_r_mode()
         # c.stay(3)
         # c.set_expected_diff()
