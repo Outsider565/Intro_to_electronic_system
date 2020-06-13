@@ -41,7 +41,7 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
 
     def __record_distance(self):
         while not self.__end_flag.is_set():
-            self.dist_list.append(self.get_distance())
+            self.dist_list.append(self.get_raw_distance())
 
     def __init_record_power(self):
         record_thread = threading.Thread(target=self.__record_power)
@@ -57,8 +57,8 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
         l_speed_n = np.array(self.l_speed)
         r_speed_n = np.array(self.r_speed)
         dif = len(r_speed_n) - len(self.l_power)
-        l_power_n = np.array(self.l_power[:dif])
-        r_power_n = np.array(self.r_power[:dif])
+        l_power_n = np.array(self.l_power[:-1 * dif])
+        r_power_n = np.array(self.r_power[:-1 * dif])
         l_round_n = np.array(self.l_round)
         r_round_n = np.array(self.r_round)
         dist_n = np.array(self.dist_list)
@@ -92,37 +92,36 @@ class CarInfo(power.CarPower, speed.CarSpeed, ultra.CarUltra):
     def get_time(self):
         return time.perf_counter() - self.t0
 
-    def get_distance_2(self):
-        if len(self.dist_list) == 0:
+    def get_distance(self, index=0):
+        if len(self.dist_list) <= index:
             return 0
         else:
-            return self.dist_list[-1]
+            return self.dist_list[-1*index]
 
 
 def gen_raw_data():
     c = CarInfo(0.1)
     c.free()
-    #try:
-    #    for i in range(0, 101, 2):
-    #        c.set_left_power(i)
-    #        c.set_right_power(i)
-    #        c.stay(3)
-    #        print(i, c.get_l_speed(), c.get_r_speed())
-    #        c.set_left_power(0)
-    #        c.set_right_power(0)
-    #        c.stay(1)
-    #    # for i in range(-100, 101):
-    #    #    c.set_right_power(i)
-    #    #    c.stay(3)
-    #    #    print(i, c.get_l_speed(), c.get_r_speed())
-    #    #    c.set_right_power(0)
-    #    #    c.stay(1)
-#
-    #    c.free()
-    #except:
-    #    print("Failed")
-    #    c.save_data()
-    #    c.free()
+    try:
+        for i in range(0, 101, 2):
+            c.set_left_power(i)
+            c.set_right_power(i)
+            c.stay(3)
+            print(i, c.get_l_speed(), c.get_r_speed())
+            c.set_left_power(0)
+            c.set_right_power(0)
+            c.stay(1)
+        for i in range(-100, 101):
+           c.set_right_power(i)
+           c.stay(3)
+           print(i, c.get_l_speed(), c.get_r_speed())
+           c.set_right_power(0)
+           c.stay(1)
+           c.free()
+    except:
+        print("Failed")
+        c.save_data()
+        c.free()
 
 
 if __name__ == '__main__':
@@ -130,7 +129,7 @@ if __name__ == '__main__':
     spd = 100
     c.set_both_power(spd)
     c.set_r_mode()
-    while c.get_time() < 3:
+    while c.get_time() < 19:
         c.set_left_power(spd * (1 - min(max(c.get_l_round() - c.get_r_round(), 0), 1)))
         c.set_right_power(spd * (1 - min(max(c.get_r_round() - c.get_l_round(), 0), 1)))
         c.stay(0.1)
