@@ -4,7 +4,7 @@ import wiringpi
 EA, I2, I1, EB, I4, I3 = (13, 19, 26, 16, 20, 21)
 FREQUENCY = 200
 L_COMPENSATOR = 2
-
+# TODO: 加上切换左右的开关，设置好接口来后驱，这里千万不要出问题了
 
 class CarPower:
 
@@ -26,11 +26,11 @@ class CarPower:
         if val < 0:
             GPIO.output(I1, GPIO.LOW)
             GPIO.output(I2, GPIO.HIGH)
-            self.pwm_left.ChangeDutyCycle(max(-1 * val - L_COMPENSATOR,0))
+            self.pwm_left.ChangeDutyCycle(max(-1 * val - L_COMPENSATOR, 0))
         else:
             GPIO.output(I2, GPIO.LOW)
             GPIO.output(I1, GPIO.HIGH)
-            self.pwm_left.ChangeDutyCycle(max(val - L_COMPENSATOR,0))
+            self.pwm_left.ChangeDutyCycle(max(val - L_COMPENSATOR, 0))
         self.left_power = val
 
     def set_right_power(self, val):
@@ -64,6 +64,7 @@ class CarPower:
         self.pwm_right.stop()
         GPIO.cleanup()
 
+    @staticmethod
     def set_r_mode(self):
         print("warning in R mode")
         global I1, I2, I3, I4
@@ -73,6 +74,7 @@ class CarPower:
 
 if __name__ == '__main__':
     c = CarPower()
-    c.set_left_power(30)
-    # c.set_right_power(-30)
+    c.set_left_power(100)
+    c.set_right_power(100)
     c.stay(2)
+    c.free()
