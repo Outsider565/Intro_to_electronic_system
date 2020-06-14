@@ -3,14 +3,15 @@ import numpy as np
 import threading
 import wiringpi
 
-FACTOR = 5  # 排除超声意外情况的Threshold
-SIDE = 1  # 超声传感器是放在左边还是右边
+FACTOR = 7  # 排除超声意外情况的Threshold
+SIDE = 0.3  # 超声传感器是放在左边还是右边
 
 
 class DiffList:
     """
     为了排除超声传感器的特殊情况和通过消防门时的特殊情况
     """
+
     def __init__(self):
         self.lst = []
 
@@ -24,13 +25,14 @@ class DiffList:
             else:
                 raise IndexError
         else:
-            print("Unusual Fluctuation: " + str(self.lst[-1]) + "->" + str(val))
+            print("Unusual Fluctuation: " +
+                  str(self.lst[-1]) + "->" + str(val))
 
     def __mean_abs(self):
         return np.abs(np.array(self.lst)).mean()
 
     def if_valid(self, val):
-        if len(self.lst) < 5 or abs(val) <= FACTOR * self.__mean_abs():
+        if len(self.lst) < 5 or self.__mean_abs() == 0 or abs(val) <= FACTOR * self.__mean_abs():
             return True
         else:
             return False
@@ -51,18 +53,21 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=0.1, ki=0.001,speed=100):
+    def __init__(self, period=0.1, kp=0.01, ki=0.008, speed=100):
         self.car = CarCtrl.CarCtrl(speed=0)
         self.car.start()
         self.kp = kp
         self.ki = ki
-        self.speed=speed
-        print("Wait 0.8 second for initiation")
+        self.speed = speed
+        print("Wait 1 second for initiation")
         # TODO:或许可以先把马达开到0.2预热啥的...
         # self.car.set_power(10)
-        self.car.stay(0.6)
-        self.base_distance = self.car.get_distance()
+        self.car.stay(1)
+        self.base_distance = np.array(self.car.basis.dist_list).mean()
+        print(self.car.basis.dist_list)
+        print("wait xxx")
         self.diff_list = DiffList()
+        self.dist_list=DiffList()
         self.period = period
         self.__end_flag = threading.Event()
         self.__init_record_diff_list()
@@ -70,7 +75,9 @@ class CarForward:
 
     def update_diff_list(self):
         while not self.__end_flag.isSet():
-            self.diff_list.append(self.car.get_distance() - self.car.get_distance(1))
+            self.diff_list.append(
+                self.car.get_distance() - self.car.get_distance(1))
+            self.dist_list.append(self.car.get_distance())
             wiringpi.delay(int(1000 * self.period))
 
     def __init_record_diff_list(self):
@@ -85,21 +92,25 @@ class CarForward:
         try:
             self.car.set_power(self.speed)
             while not self.__end_flag.isSet():
-                bias = self.kp * self.diff_list.get_val() + self.ki * (self.base_distance - self.car.get_distance())
-                print("set bias as: ", bias)
+                bias = (self.kp * self.diff_list.get_val() + self.ki *
+                        (self.base_distance - self.dist_list.get_val()))*SIDE
+                print("{:.3f}".format(self.kp * self.diff_list.get_val()),"{:.3f}".format(self.ki *
+                        (self.base_distance - self.dist_list.get_val())))
+                print("set bias as: {:.3f}".format(bias))
                 self.car.set_expected_diff(bias)
                 self.car.stay(0.1)
         except:
             self.stop()
 
-    def stay(self,t):
+    def stay(self, t):
         self.car.stay(t)
 
     def stop(self):
         self.__end_flag.set()
         self.car.stop()
 
+
 if __name__ == '__main__':
-    f = CarForward(speed=0)
-    f.stay(1)
+    f = CarForward(speed=100)
+    f.stay(7)
     f.stop()

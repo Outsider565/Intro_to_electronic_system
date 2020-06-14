@@ -1,10 +1,10 @@
 import RPi.GPIO as GPIO
 import wiringpi
 
-EA, I2, I1, EB, I4, I3 = (13, 20, 21, 16, 19, 26)
+EA, I2, I1, EB, I4, I3 = (16, 19, 26, 13, 20, 21)
 FREQUENCY = 200
-L_COMPENSATOR = 2
-
+L_COMPENSATOR = 0
+R_COMPENSATOR = 5
 
 # TODO: 加上切换左右的开关，设置好接口来后驱，这里千万不要出问题了
 
@@ -13,8 +13,8 @@ class CarPower:
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([EA, I2, I1, EB, I4, I3], GPIO.OUT)
-        GPIO.output([EA, I1, EB, I4], GPIO.LOW)
-        GPIO.output([I2, I3], GPIO.HIGH)
+        GPIO.output([EA, I2, EB, I3], GPIO.LOW)
+        GPIO.output([I1, I4], GPIO.HIGH)
         self.left_power = 0
         self.right_power = 0
         self.speed = {'l': 0, 'r': 0}
@@ -26,8 +26,8 @@ class CarPower:
     def set_left_power(self, val):
         assert -100 <= val <= 100, "left_power must be -100-100"
         if val < 0:
-            GPIO.output(I1, GPIO.LOW)
-            GPIO.output(I2, GPIO.HIGH)
+            GPIO.output(I2, GPIO.LOW)
+            GPIO.output(I1, GPIO.HIGH)
             self.pwm_left.ChangeDutyCycle(max(-1 * val - L_COMPENSATOR, 0))
         else:
             GPIO.output(I2, GPIO.LOW)
@@ -40,11 +40,11 @@ class CarPower:
         if val < 0:
             GPIO.output(I4, GPIO.LOW)
             GPIO.output(I3, GPIO.HIGH)
-            self.pwm_right.ChangeDutyCycle(-1 * val)
+            self.pwm_right.ChangeDutyCycle(max(-1 * val - R_COMPENSATOR, 0))
         else:
             GPIO.output(I3, GPIO.LOW)
             GPIO.output(I4, GPIO.HIGH)
-            self.pwm_right.ChangeDutyCycle(val)
+            self.pwm_right.ChangeDutyCycle(max(val - R_COMPENSATOR, 0))
         self.right_power = val
 
     def set_both_power(self, val):
@@ -77,6 +77,6 @@ class CarPower:
 if __name__ == '__main__':
     c = CarPower()
     c.set_left_power(100)
-    # c.set_right_power(100)
-    c.stay(19)
+    c.set_right_power(100)
+    c.stay(5)
     c.free()

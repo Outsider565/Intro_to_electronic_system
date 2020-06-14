@@ -4,7 +4,7 @@ import numpy as np
 
 
 class CarCtrl:
-    def __init__(self, speed=100, diff=0, period=0.05, kp=66, ki=15, kd=2):
+    def __init__(self, speed=100, diff=0, period=0.05, kp=100, ki=12, kd=1):
         self.period = period
         self.basis = CarInfo.CarInfo(period)
         self.expected_diff = diff
@@ -50,13 +50,13 @@ class CarCtrl:
             try:
                 self.basis.set_left_power(max(self.power + min(self.get_diff(), 0), 0))
                 self.basis.set_right_power(max(self.power - max(self.get_diff(), 0), 0))
-                self.print_info()
+                #self.print_info()
                 self.basis.stay(self.period)
             except Exception as e:
                 self.basis.set_left_power(100)
                 self.basis.set_right_power(100)
                 print("Run into exception: "+str(e))
-                self.print_info()
+                #self.print_info()
                 self.basis.stay(self.period)
 
     def start(self):
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     try:
         c = CarCtrl()
         c.start()
-        c.set_power(0)
+        c.set_power(100)
         c.set_expected_diff(0)
         c.stay(5)
         # c.set_r_mode()
