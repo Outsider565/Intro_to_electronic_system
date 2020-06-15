@@ -6,7 +6,7 @@ import wiringpi
 FACTOR = 7  # 排除超声意外情况的Threshold
 SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1
 
-
+# TODO:增加log功能
 class DiffList:
     """
     为了排除超声传感器的特殊情况和通过消防门时的特殊情况

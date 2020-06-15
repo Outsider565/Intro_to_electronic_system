@@ -18,7 +18,7 @@ class CarInfo(power.CarPower, speed.CarSpeed):
         self.t0 = time.perf_counter()
         power.CarPower.__init__(self)
         speed.CarSpeed.__init__(self, t0=self.t0)
-        self.ultra_getter=ultra.CarUltra(period=0.1)
+        self.ultra_getter = ultra.CarUltra(period=0.1)
         self.period = period
         self.l_speed = []
         self.r_speed = []
@@ -69,8 +69,8 @@ class CarInfo(power.CarPower, speed.CarSpeed):
                 np.savez(f, time_list=time_list, l_speed=l_speed_n, r_speed=r_speed_n, l_power=l_power_n,
                          r_power=r_power_n,
                          l_round=l_round_n, r_round=r_round_n, dist_list=dist_n)
-        except:
-            print("Write Failed")
+        except Exception as e:
+            print("Write Failed: ", e)
             self.free()
 
     def update_speed_and_round(self):
@@ -90,38 +90,42 @@ class CarInfo(power.CarPower, speed.CarSpeed):
         power.CarPower.free(self)
 
     def get_time(self):
+        """
+        :return: 从计时开始到现在的时间
+        """
         return time.perf_counter() - self.t0
 
-    def get_distance(self, index=0):
+    def get_round(self, index=0):
         if len(self.dist_list) <= index:
             return 0
         else:
-            return self.dist_list[len(self.dist_list)-1-index]
+            return self.dist_list[len(self.dist_list) - 1 - index]
 
 
 def gen_raw_data():
-    c = CarInfo(0.1)
-    c.free()
+    # 这是测试时用来生成两马达性能的函数，可以忽略
+    car = CarInfo(0.1)
+    car.free()
     try:
         for i in range(0, 101, 2):
-            c.set_left_power(i)
-            c.set_right_power(i)
-            c.stay(3)
-            print(i, c.get_l_speed(), c.get_r_speed())
-            c.set_left_power(0)
-            c.set_right_power(0)
-            c.stay(1)
+            car.set_left_power(i)
+            car.set_right_power(i)
+            car.stay(3)
+            print(i, car.get_l_speed(), car.get_r_speed())
+            car.set_left_power(0)
+            car.set_right_power(0)
+            car.stay(1)
         for i in range(-100, 101):
-           c.set_right_power(i)
-           c.stay(3)
-           print(i, c.get_l_speed(), c.get_r_speed())
-           c.set_right_power(0)
-           c.stay(1)
-           c.free()
-    except:
-        print("Failed")
-        c.save_data()
-        c.free()
+            car.set_right_power(i)
+            car.stay(3)
+            print(i, car.get_l_speed(), car.get_r_speed())
+            car.set_right_power(0)
+            car.stay(1)
+            car.free()
+    except Exception as e:
+        print(e)
+        car.save_data()
+        car.free()
 
 
 if __name__ == '__main__':

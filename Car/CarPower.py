@@ -2,11 +2,10 @@ import RPi.GPIO as GPIO
 import wiringpi
 
 EA, I2, I1, EB, I4, I3 = (16, 19, 26, 13, 20, 21)
-FREQUENCY = 200
+FREQUENCY = 100
 L_COMPENSATOR = 0
-R_COMPENSATOR = 5
+R_COMPENSATOR = 0
 
-# TODO: 加上切换左右的开关，设置好接口来后驱，这里千万不要出问题了
 
 class CarPower:
 
