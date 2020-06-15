@@ -4,7 +4,7 @@ import threading
 import wiringpi
 
 FACTOR = 7  # 排除超声意外情况的Threshold
-SIDE = 0.3  # 超声传感器是放在左边还是右边
+SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1
 
 
 class DiffList:
@@ -16,26 +16,30 @@ class DiffList:
         self.lst = []
 
     def append(self, val):
+        """
+        在距离差分列表中插入一个值，并判断该值的有效性，如果有效则插入，返回True，否则返回False，且不插入
+        :param val:
+        :return:
+        """
         if self.if_valid(val):
-            if len(self.lst) < 10:
-                self.lst.append(val)
-            elif len(self.lst) == 10:
-                self.lst.pop(0)
-                self.lst.append(val)
-            else:
-                raise IndexError
+            self.lst.append(val)
+            return True
         else:
             print("Unusual Fluctuation: " +
-                  str(self.lst[-1]) + "->" + str(val))
+                  str(self.__mean_abs()) + "->" + str(val))
+            return False
 
     def __mean_abs(self):
-        return np.abs(np.array(self.lst)).mean()
+        return np.abs(np.array(self.lst[-10:])).mean()
 
     def if_valid(self, val):
         if len(self.lst) < 5 or self.__mean_abs() == 0 or abs(val) <= FACTOR * self.__mean_abs():
             return True
         else:
             return False
+
+    def get_sum(self):
+        return np.array(self.lst).sum()
 
     def get_val(self):
         if len(self.lst) == 0:
@@ -45,6 +49,12 @@ class DiffList:
         else:
             return np.array(self.lst[:-5]).mean()
 
+    def get_d(self):
+        if len(self.lst) < 5:
+            return 0
+        else:
+            return self.lst[-1] - self.lst[-2]
+
     def __getitem__(self, item):
         return self.lst[item]
 
@@ -53,21 +63,21 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=0.01, ki=0.008, speed=100):
-        self.car = CarCtrl.CarCtrl(speed=0)
+    def __init__(self, period=0.1, kp=0.1, ki=0.005, kd=0.01, speed=100):
+        self.car = CarCtrl.CarCtrl(speed=0, init_time=0, if_print=False)
         self.car.start()
         self.kp = kp
         self.ki = ki
+        self.kd = kd
         self.speed = speed
         print("Wait 1 second for initiation")
         # TODO:或许可以先把马达开到0.2预热啥的...
         # self.car.set_power(10)
         self.car.stay(1)
-        self.base_distance = np.array(self.car.basis.dist_list).mean()
-        print(self.car.basis.dist_list)
-        print("wait xxx")
+        base_distance = np.array(self.car.basis.dist_list).mean()
+        print("base distance：{:.1f}".format(base_distance))
         self.diff_list = DiffList()
-        self.dist_list=DiffList()
+        self.dist_list = DiffList()
         self.period = period
         self.__end_flag = threading.Event()
         self.__init_record_diff_list()
@@ -92,14 +102,16 @@ class CarForward:
         try:
             self.car.set_power(self.speed)
             while not self.__end_flag.isSet():
-                bias = (self.kp * self.diff_list.get_val() + self.ki *
-                        (self.base_distance - self.dist_list.get_val()))*SIDE
-                print("{:.3f}".format(self.kp * self.diff_list.get_val()),"{:.3f}".format(self.ki *
-                        (self.base_distance - self.dist_list.get_val())))
+                bias = (self.kp * self.diff_list.get_val() + self.ki * self.diff_list.get_sum() +
+                        self.kd * self.diff_list.get_d()) * SIDE
+                print("p: {:.3f}".format(self.kp * self.diff_list.get_val()) + '\t' +
+                      "i: {:.3f}".format(self.ki * self.diff_list.get_sum()) + 't' +
+                      "d: {:.3f}".format(self.kd * self.diff_list.get_d()))
                 print("set bias as: {:.3f}".format(bias))
                 self.car.set_expected_diff(bias)
                 self.car.stay(0.1)
-        except:
+        except Exception as e:
+            print(e)
             self.stop()
 
     def stay(self, t):
@@ -109,8 +121,14 @@ class CarForward:
         self.__end_flag.set()
         self.car.stop()
 
+    def get_distance(self):
+        return self.car.get_distance()
 
 if __name__ == '__main__':
-    f = CarForward(speed=100)
-    f.stay(7)
-    f.stop()
+    try:
+        f = CarForward(speed=100)
+        f.stay(0.3)
+        f.stop()
+    except Exception as e:
+        print(e)
+        f.stop()
