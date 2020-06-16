@@ -31,14 +31,14 @@ class DiffList:
             return True
         else:
             logger.warning("Unusual Fluctuation: " +
-                           str(self.__mean_abs()) + "->" + str(val))
+                           str(self.__mean_abs_10_elem()) + "->" + str(val))
             return False
 
-    def __mean_abs(self):
+    def __mean_abs_10_elem(self):
         return np.abs(np.array(self.lst[-10:])).mean()
 
     def if_valid(self, val):
-        if len(self.lst) < 5 or self.__mean_abs() == 0 or abs(val) <= FACTOR * self.__mean_abs() or abs(val) < LIMIT:
+        if len(self.lst) < 5 or self.__mean_abs_10_elem() == 0 or abs(val) <= FACTOR * self.__mean_abs_10_elem() or abs(val) < LIMIT:
             return True
         else:
             return False
