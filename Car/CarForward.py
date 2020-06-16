@@ -9,7 +9,7 @@ import Carlog
 logger = Carlog.logger
 FACTOR = 10  # 排除超声意外情况的Threshold
 SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1
-
+LIMIT = 7
 
 # TODO:增加log功能
 class DiffList:
@@ -38,7 +38,7 @@ class DiffList:
         return np.abs(np.array(self.lst[-10:])).mean()
 
     def if_valid(self, val):
-        if len(self.lst) < 5 or self.__mean_abs() == 0 or abs(val) <= FACTOR * self.__mean_abs():
+        if len(self.lst) < 5 or self.__mean_abs() == 0 or abs(val) <= FACTOR * self.__mean_abs() or abs(val) < LIMIT:
             return True
         else:
             return False
