@@ -134,7 +134,7 @@ class CarForward:
 if __name__ == '__main__':
     try:
         f = CarForward(speed=100)
-        f.stay(4)
+        f.stay(10)
         f.stop()
     except Exception as e:
         logger.error(str(e))
