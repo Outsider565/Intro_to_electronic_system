@@ -1,6 +1,10 @@
-import time
 import smbus
 import wiringpi
+
+import Carlog
+
+logger = Carlog.logger
+
 DISTANCE = 0xb0
 TIME = 0xb2
 DISTANCE_WITH_TEMP = 0xb4
@@ -13,7 +17,7 @@ class CarUltra:
         self.addr = address
         self.wr_cmd = wr_cmd
         self.bus = smbus.SMBus(1)
-        self.period=period
+        self.period = period
 
     def get_raw_distance(self):
         self.bus.write_byte_data(self.addr, 0x2, self.wr_cmd)
@@ -24,7 +28,7 @@ class CarUltra:
                     self.addr, 0x2), self.bus.read_byte_data(self.addr, 0x3)
                 break
             except IOError as e:
-                print("First time get failed, try again: "+str(e))
+                logger.error("First time get failed, try again: " + str(e))
                 wiringpi.delay(int(1000 * self.period))
         return (high_byte << 8) + LowByte
 
@@ -33,8 +37,8 @@ class CarUltra:
 
 
 if __name__ == '__main__':
-    addr=0x74
-    c=CarUltra(period=0.1)
+    addr = 0x74
+    c = CarUltra(period=0.1)
     for i in range(100):
         print(c.get_raw_distance())
     c.free()

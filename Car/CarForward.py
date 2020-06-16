@@ -1,10 +1,15 @@
-import CarCtrl
-import numpy as np
 import threading
+
+import numpy as np
 import wiringpi
 
-FACTOR = 7  # 排除超声意外情况的Threshold
+import CarCtrl
+import Carlog
+
+logger = Carlog.logger
+FACTOR = 10  # 排除超声意外情况的Threshold
 SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1
+
 
 # TODO:增加log功能
 class DiffList:
@@ -25,8 +30,8 @@ class DiffList:
             self.lst.append(val)
             return True
         else:
-            print("Unusual Fluctuation: " +
-                  str(self.__mean_abs()) + "->" + str(val))
+            logger.warning("Unusual Fluctuation: " +
+                           str(self.__mean_abs()) + "->" + str(val))
             return False
 
     def __mean_abs(self):
@@ -63,19 +68,19 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=0.1, ki=0.005, kd=0.01, speed=100):
-        self.car = CarCtrl.CarCtrl(speed=0, init_time=0, if_print=False)
+    def __init__(self, period=0.1, kp=0.06, ki=0.005, kd=0.015, speed=100):
+        self.car = CarCtrl.CarCtrl(speed=0, init_time=0, if_print=True)
         self.car.start()
         self.kp = kp
         self.ki = ki
         self.kd = kd
         self.speed = speed
-        print("Wait 1 second for initiation")
+        logger.info("Wait 1 second for initiation")
         # TODO:或许可以先把马达开到0.2预热啥的...
         # self.car.set_power(10)
         self.car.stay(1)
         base_distance = np.array(self.car.basis.dist_list).mean()
-        print("base distance：{:.1f}".format(base_distance))
+        logger.info("base distance：{:.1f}".format(base_distance))
         self.diff_list = DiffList()
         self.dist_list = DiffList()
         self.period = period
@@ -104,14 +109,15 @@ class CarForward:
             while not self.__end_flag.isSet():
                 bias = (self.kp * self.diff_list.get_val() + self.ki * self.diff_list.get_sum() +
                         self.kd * self.diff_list.get_d()) * SIDE
-                print("p: {:.3f}".format(self.kp * self.diff_list.get_val()) + '\t' +
-                      "i: {:.3f}".format(self.ki * self.diff_list.get_sum()) + 't' +
-                      "d: {:.3f}".format(self.kd * self.diff_list.get_d()))
-                print("set bias as: {:.3f}".format(bias))
+                pid_info = "p: {:.3f}".format(self.kp * self.diff_list.get_val()) + '\t' + "i: {:.3f}".format(
+                    self.ki * self.diff_list.get_sum()) + '\t' + "d: {:.3f}".format(self.kd * self.diff_list.get_d())
+                logger.info("distance change: {:.1f}".format(self.diff_list.get_val()))
+                logger.debug(pid_info)
+                logger.info("set bias as: {:.3f}".format(bias))
                 self.car.set_expected_diff(bias)
                 self.car.stay(0.1)
         except Exception as e:
-            print(e)
+            logger.error(str(e))
             self.stop()
 
     def stay(self, t):
@@ -124,11 +130,12 @@ class CarForward:
     def get_distance(self):
         return self.car.get_distance()
 
+
 if __name__ == '__main__':
     try:
         f = CarForward(speed=100)
-        f.stay(0.3)
+        f.stay(4)
         f.stop()
     except Exception as e:
-        print(e)
+        logger.error(str(e))
         f.stop()

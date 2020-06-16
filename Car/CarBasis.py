@@ -1,18 +1,22 @@
+import threading
+import time
+
+import numpy as np
+import wiringpi
+
 import CarPower as power
 import CarSpeed as speed
 import CarUltra as ultra
-import time
-import numpy as np
-import threading
-import wiringpi
+import Carlog
 
 DIRECTORY = '/home/pi/CarData/raw'
+logger = Carlog.logger
 
 
-class CarInfo(power.CarPower, speed.CarSpeed):
+class CarBasis(power.CarPower, speed.CarSpeed):
     def __init__(self, period=0.05):
         """
-        这是用于获取和记录小车信息的类
+        这是封装小车底层的类
         :param period: 每隔多久测一次
         """
         self.t0 = time.perf_counter()
@@ -63,14 +67,18 @@ class CarInfo(power.CarPower, speed.CarSpeed):
         r_round_n = np.array(self.r_round)
         dist_n = np.array(self.dist_list)
         t_name = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
-        print("data write into " + DIRECTORY + "/" + t_name + ".npz")
+        logger.info("l_power: {:.3f}\tr_power: {:.3f}".format(np.delete(l_power_n, np.where(l_power_n == 0)).mean(),
+                                                              np.delete(r_power_n, np.where(r_power_n == 0)).mean()))
+        logger.info("l_speed: {:.3f}\tr_speed: {:.3f}".format(np.delete(l_speed_n, np.where(l_speed_n == 0)).mean(),
+                                                              np.delete(r_speed_n, np.where(r_speed_n == 0)).mean()))
+        logger.info("data write into " + DIRECTORY + "/" + t_name + ".npz")
         try:
             with open(DIRECTORY + "/" + t_name + ".npz", "wb") as f:
                 np.savez(f, time_list=time_list, l_speed=l_speed_n, r_speed=r_speed_n, l_power=l_power_n,
                          r_power=r_power_n,
                          l_round=l_round_n, r_round=r_round_n, dist_list=dist_n)
         except Exception as e:
-            print("Write Failed: ", e)
+            logger.error("Write Failed: ", e)
             self.free()
 
     def update_speed_and_round(self):
@@ -104,7 +112,7 @@ class CarInfo(power.CarPower, speed.CarSpeed):
 
 def gen_raw_data():
     # 这是测试时用来生成两马达性能的函数，可以忽略
-    car = CarInfo(0.1)
+    car = CarBasis(0.1)
     car.free()
     try:
         for i in range(0, 101, 2):
@@ -129,7 +137,7 @@ def gen_raw_data():
 
 
 if __name__ == '__main__':
-    c = CarInfo(0.1)
+    c = CarBasis(0.1)
     spd = 100
     c.set_both_power(spd)
     c.set_r_mode()

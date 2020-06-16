@@ -1,12 +1,18 @@
-import CarInfo
 import threading
+
 import numpy as np
+
+import CarBasis
+import Carlog
+
+logger = Carlog.logger
+
 
 class CarCtrl:
     def __init__(self, speed=100, diff=0, period=0.05, kp=80, ki=0.95, kd=1.2, if_print=True, init_l_speed=100,
                  init_r_speed=78, init_time=0.1, i_init_value=60):
         self.period = period
-        self.basis = CarInfo.CarInfo(period)
+        self.basis = CarBasis.CarBasis(period)
         self.expected_diff = diff
         self.power = speed
         self.bias = 0
@@ -81,7 +87,7 @@ class CarCtrl:
             except Exception as e:
                 self.basis.set_left_power(100)
                 self.basis.set_right_power(60)
-                print("Run into exception: " + str(e))
+                logger.error("Run into exception: " + str(e))
                 self.print_info()
                 self.basis.stay(self.period)
 
@@ -94,20 +100,21 @@ class CarCtrl:
         self.basis.free()
 
     def print_info(self):
-        print("l_round:" + '{:.1f}'.format(self.basis.get_l_round()) + "\tr_round: " + '{:.1f}'.format(
-            self.basis.get_r_round()))
-        print("l_power:" + '{:.1f}'.format(self.basis.get_l_power()) + "\tr_power: " + '{:.1f}'.format(
-            self.basis.get_r_power()))
-        print("p: " + "{:.2f}".format(self.p_diff) + "\ti: " + "{:.2f}".format(
-            self.i_diff) + "\td: " + "{:.2f}".format(self.d_diff))
-        print("dist: ", self.get_distance())
+        if self.basis.get_l_round() != 0 or self.basis.get_r_round() != 0:
+            logger.info("l_round:" + '{:.1f}'.format(self.basis.get_l_round()) + "\tr_round: " + '{:.1f}'.format(
+                self.basis.get_r_round()))
+            logger.debug("l_power:" + '{:.1f}'.format(self.basis.get_l_power()) + "\tr_power: " + '{:.1f}'.format(
+                self.basis.get_r_power()))
+            logger.debug("p_power: " + "{:.2f}".format(self.p_diff) + "\ti_power: " + "{:.2f}".format(
+                self.i_diff) + "\td_power: " + "{:.2f}".format(self.d_diff))
+            logger.debug("raw_distance: " + str(self.get_distance()))
 
     def get_distance(self, index=0):
         return self.basis.get_round(index)
 
     @staticmethod
     def stay(t):
-        CarInfo.CarInfo.stay(t)
+        CarBasis.CarBasis.stay(t)
 
     def set_r_mode(self):
         self.basis.set_r_mode()
@@ -115,11 +122,10 @@ class CarCtrl:
 
 if __name__ == '__main__':
     try:
-        c = CarCtrl(i_init_value=40)
+        c = CarCtrl()
         c.start()
         c.set_power(100)
-        c.set_expected_diff(-0.15)
-        c.stay(3)
+        c.stay(4)
         # c.set_expected_diff(0.1)
         # c.stay(3)
         # c.set_r_mode()

@@ -1,6 +1,9 @@
 import RPi.GPIO as GPIO
 import wiringpi
 
+import Carlog
+
+logger = Carlog.logger
 EA, I2, I1, EB, I4, I3 = (16, 19, 26, 13, 20, 21)
 FREQUENCY = 100
 L_COMPENSATOR = 0
@@ -67,7 +70,7 @@ class CarPower:
 
     @staticmethod
     def set_r_mode():
-        print("warning in R mode")
+        logger.warning("warning in R mode")
         global I1, I2, I3, I4
         I1, I2 = I2, I1
         I3, I4 = I4, I3
