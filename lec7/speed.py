@@ -55,11 +55,11 @@ while i<=20:
     x.append(5*i)
     pwma.ChangeDutyCycle(5*i)
     pwmb.ChangeDutyCycle(5*i)
-    time.sleep(3)
+    time.sleep(1)
     y1.append(lspeed)
     y2.append(rspeed)
     i=i+1
-    		
+            
 plt.plot(x,y1,'-o')
 plt.plot(x,y2,'-*')
 print(x,y1)
