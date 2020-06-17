@@ -17,7 +17,7 @@ class CarCamera(object):
         PORT = 9999  # 随便设置一个，对应起来就行
         self.server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server.connect((HOST, PORT))
-        self.t0=time.perf_counter()
+        self.t0 = time.perf_counter()
 
     def CameraInit(self):  # 初始化PiCamera
         self.camera = PiCamera()

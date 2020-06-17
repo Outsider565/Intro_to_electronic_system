@@ -3,11 +3,17 @@ import time
 
 import RPi.GPIO as GPIO
 
-LS = 6
-RS = 12
+LS = 6  # 左侧光电码盘的GPIO口号
+RS = 12  # 右侧光电码盘的GPIO口号
+
+# 最开始设计小车时，我原本打算使用速度进行PID调节，但发现速度在行驶过程中会有波动，且光电码盘的固有误差
+# 因此选用了更可靠的读取已经转动的圈速进行调节
 
 
 class SpeedGetter(threading.Thread):
+    """
+    这是一个用来获取左右两轮速度，线程安全的线程类
+    """
     def __init__(self, l_timer: list, r_timer: list, t0: float):
         super().__init__()
         self._stop_event = threading.Event()
@@ -45,6 +51,11 @@ class SpeedGetter(threading.Thread):
 
 class CarSpeed:
     def __init__(self, t0=None, period=0.2):
+        """
+        该类主要用来获取小车的速度和路程
+        :param t0: 开始记录的时间
+        :param period: 记录速度的周期
+        """
         self.period = period
         self.l_timer = []
         self.r_timer = []
@@ -104,6 +115,9 @@ class CarSpeed:
         return self.__get_speed(self.r_timer, t)
 
     def __get_times(self, time_list, t):
+        """
+        :return: 在t之前的time_list中有多少个元素(实际意义是返回了光电码盘电平升高的次数）
+        """
         if t is None:
             t = time.perf_counter() - self.t0
         if len(time_list) == 0:
@@ -115,6 +129,7 @@ class CarSpeed:
         else:
             return self.__get_time_index(time_list, t)[1]
 
+    # 转动的圈数=光电码盘升高数/10
     def get_l_round(self, t=None):
         return self.__get_times(self.l_timer, t) / 10
 

@@ -9,11 +9,23 @@ logger = Carlog.logger
 
 
 class CarCtrl:
-    def __init__(self, speed=100, diff=0, period=0.05, kp=80, ki=0.95, kd=1.2, if_print=True, init_l_speed=100,
+    """
+    该类承担了整个小车最重的责任，进行PID调节小车的方向
+    """
+    def __init__(self, speed=100, expected_diff=0, period=0.05, kp=80, ki=0.95, kd=1.2, init_l_speed=100,
                  init_r_speed=78, init_time=0.1, i_init_value=60):
+        """
+        :param speed: 希望小车以多少PWM功率运行
+        :param expected_diff: 希望小车左轮和右轮转圈数的差值
+        :param period: 系统更新的周期
+        :param init_l_speed: 初始左轮速度
+        :param init_r_speed: 初始右轮速度
+        :param init_time: 初始时间
+        :param i_init_value: 最开始给i的初值（因为左轮和右轮的转速差异，需要给一个初始值来利用PID迭代
+        """
         self.period = period
         self.basis = CarBasis.CarBasis(period)
-        self.expected_diff = diff
+        self.expected_diff = expected_diff
         self.power = speed
         self.bias = 0
         self.kp = kp
@@ -27,7 +39,6 @@ class CarCtrl:
         self.init_time = init_time
         self.i_init_value = i_init_value
         self.raw_diff_list = []
-        self.if_print = if_print
         self.__end_flag = threading.Event()
 
     def set_expected_diff(self, val):
@@ -74,15 +85,14 @@ class CarCtrl:
         self.raw_diff_list.append(self.i_init_value)
         while not self.__end_flag.isSet():
             try:
-                if self.get_time() <= self.init_time:
-                    self.basis.set_left_power(self.init_l_speed)
+                if self.get_time() <= self.init_time:  # 在真正启动前不print相关信息
+                    self.basis.set_left_power(self.init_l_speed) # 最开始的小车运作不依靠PID，而依靠手动调节
                     self.basis.set_right_power(self.init_r_speed)
                     self.basis.stay(self.period)
                 else:
                     self.basis.set_left_power(max(self.power + min(self.get_diff(), 0), 0))
                     self.basis.set_right_power(max(self.power - max(self.get_diff(), 0), 0))
-                    if self.if_print:
-                        self.print_info()
+                    self.print_info()
                     self.basis.stay(self.period)
             except Exception as e:
                 self.basis.set_left_power(100)
@@ -110,7 +120,7 @@ class CarCtrl:
             logger.debug("raw_distance: " + str(self.get_distance()))
 
     def get_distance(self, index=0):
-        return self.basis.get_round(index)
+        return self.basis.get_distance(index)
 
     @staticmethod
     def stay(t):

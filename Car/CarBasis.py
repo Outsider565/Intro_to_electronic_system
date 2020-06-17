@@ -16,7 +16,7 @@ logger = Carlog.logger
 class CarBasis(power.CarPower, speed.CarSpeed):
     def __init__(self, period=0.05):
         """
-        这是封装小车底层的类
+        这是封装小车底层和记录相关信息的类，继承了CarPower和CarSpeed中的全部接口
         :param period: 每隔多久测一次
         """
         self.t0 = time.perf_counter()
@@ -103,7 +103,7 @@ class CarBasis(power.CarPower, speed.CarSpeed):
         """
         return time.perf_counter() - self.t0
 
-    def get_round(self, index=0):
+    def get_distance(self, index=0):
         if len(self.dist_list) <= index:
             return 0
         else:
