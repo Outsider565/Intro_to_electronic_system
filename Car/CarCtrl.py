@@ -86,7 +86,7 @@ class CarCtrl:
         while not self.__end_flag.isSet():
             try:
                 if self.get_time() <= self.init_time:  # 在真正启动前不print相关信息
-                    self.basis.set_left_power(self.init_l_speed) # 最开始的小车运作不依靠PID，而依靠手动调节
+                    self.basis.set_left_power(self.init_l_speed)  # 最开始的小车运作不依靠PID，而依靠手动调节
                     self.basis.set_right_power(self.init_r_speed)
                     self.basis.stay(self.period)
                 else:
