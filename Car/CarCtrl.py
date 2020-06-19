@@ -32,9 +32,10 @@ class CarCtrl:
         self.kp = kp
         self.ki = ki
         self.kd = kd
-        self.p_diff = 0
-        self.i_diff = 0
-        self.d_diff = 0
+        # 下面这三个量主要是在打印相关信息时为了避免重复计算而加入的，尽量避免使用
+        self.__p_diff = 0
+        self.__i_diff = 0
+        self.__d_diff = 0
         self.init_l_speed = init_l_speed
         self.init_r_speed = init_r_speed
         self.init_time = init_time
@@ -48,29 +49,29 @@ class CarCtrl:
     def set_power(self, val):
         self.power = val
 
-    def get_p_diff(self, t=None):
-        ans = (self.basis.get_r_round(t) - self.basis.get_l_round(t) - self.expected_diff)
-        if t is None:
-            self.raw_diff_list.append(ans)
-        self.p_diff = ans * self.kp
-        return ans * self.kp
+    def get_p_diff(self, t=None, insert=False):
+        raw_p_diff = (self.basis.get_r_round(t) - self.basis.get_l_round(t) - self.expected_diff)
+        if insert is True:
+            self.raw_diff_list.append(raw_p_diff)
+        self.__p_diff = raw_p_diff * self.kp
+        return self.__p_diff
 
     def get_i_diff(self):
         self.basis.update_speed_and_round()
         if len(self.raw_diff_list) == 0:
+            self.__i_diff = 0
             return 0  # 此时默认小车按正常方向行走
         else:
-            self.i_diff = np.array(self.raw_diff_list).sum() * self.ki
-            return np.array(self.raw_diff_list).sum() * self.ki
+            self.__i_diff = np.array(self.raw_diff_list).sum() * self.ki
+            return self.__i_diff
 
     def get_d_diff(self):
-        self.d_diff = (self.get_p_diff(self.basis.get_time()) - self.get_p_diff(
+        self.__d_diff = (self.get_p_diff(self.basis.get_time()) - self.get_p_diff(
             self.basis.get_time() - 1.5 * self.period)) * self.kd
-        return (self.get_p_diff(self.basis.get_time()) - self.get_p_diff(
-            self.basis.get_time() - 1.5 * self.period)) * self.kd
+        return self.__d_diff
 
     def get_diff(self):
-        return self.get_p_diff() + self.get_d_diff() + self.get_i_diff()
+        return self.get_p_diff(insert=True) + self.get_d_diff() + self.get_i_diff()
 
     def get_time(self):
         return self.basis.get_time()
@@ -80,7 +81,7 @@ class CarCtrl:
 
     def __run(self):
         """
-        会先在无指引的情况下运行self.period s，并且给raw然后再进入PID调控
+        会先在无指引的情况下运行self.period秒，并且给raw然后再进入PID调控
         :return:
         """
         self.raw_diff_list.append(self.i_init_value)
@@ -116,8 +117,8 @@ class CarCtrl:
                 self.basis.get_r_round()))
             logger.debug("l_power:" + '{:.1f}'.format(self.basis.get_l_power()) + "\tr_power: " + '{:.1f}'.format(
                 self.basis.get_r_power()))
-            logger.debug("p_power: " + "{:.2f}".format(self.p_diff) + "\ti_power: " + "{:.2f}".format(
-                self.i_diff) + "\td_power: " + "{:.2f}".format(self.d_diff))
+            logger.debug("p_power: " + "{:.2f}".format(self.__p_diff) + "\ti_power: " + "{:.2f}".format(
+                self.__i_diff) + "\td_power: " + "{:.2f}".format(self.__d_diff))
             logger.debug("raw_distance: " + str(self.get_distance()))
 
     def get_distance(self, index=0):
@@ -132,8 +133,8 @@ class CarCtrl:
 
 
 if __name__ == '__main__':
+    c = CarCtrl()
     try:
-        c = CarCtrl()
         c.start()
         c.set_power(100)
         c.stay(4)
@@ -143,5 +144,5 @@ if __name__ == '__main__':
         # c.stay(3)
         # c.set_expected_diff()
         c.stop()
-    except:
+    except KeyboardInterrupt:
         c.stop()
