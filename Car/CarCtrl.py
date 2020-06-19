@@ -12,8 +12,8 @@ class CarCtrl:
     """
     该类承担了整个小车最重的责任，进行PID调节小车的方向
     """
-    def __init__(self, speed=100, expected_diff=0, period=0.05, kp=80, ki=0.95, kd=1.2, init_l_speed=100,
-                 init_r_speed=78, init_time=0.1, i_init_value=60):
+    def __init__(self, speed=100, expected_diff=0, period=0.05, kp=90, ki=1, kd=1.2, init_l_speed=100,
+                 init_r_speed=70, init_time=0.1, i_init_value=60):
         """
         :param speed: 希望小车以多少PWM功率运行
         :param expected_diff: 希望小车左轮和右轮转圈数的差值

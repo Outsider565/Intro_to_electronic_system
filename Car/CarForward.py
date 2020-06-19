@@ -7,9 +7,9 @@ import CarCtrl
 import Carlog
 
 logger = Carlog.logger
-FACTOR = 10  # 排除超声意外情况的Threshold
+FACTOR = 7  # 排除超声意外情况的Threshold
 SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1
-LIMIT = 7  # 如果测得的距离差小于该值，同意插入DiffList
+LIMIT = 10  # 如果测得的距离差小于该值，同意插入DiffList
 SIZE = 3  # 求当前位置时，选用SIZE个最近的距离差求平均值，越大越稳定，越小越灵敏 <=5
 
 
@@ -61,7 +61,8 @@ class DiffList:
         if len(self.lst) <= SIZE:
             return np.array(self.lst).mean()
         else:
-            return np.array(self.lst[:-SIZE]).mean()
+            logger.debug(str(self.lst[-10:]))
+            return np.array(self.lst[-SIZE:]).mean()
 
     def get_d(self):
         """
@@ -80,7 +81,7 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=0.05, ki=0.004, kd=0.015, speed=100, init_val=0):
+    def __init__(self, period=0.1, kp=0.020, ki=0.004, kd=0.005, speed=100, init_val=0.2):
         """
         :param period: 整个调节的更新周期
         :param init_val: PID调节的初始量，一般设为0，如果遇到电池/开始没有放正的问题再进行调整
@@ -98,7 +99,7 @@ class CarForward:
         base_distance = np.array(self.car.basis.dist_list).mean()
         logger.info("base distance：{:.1f}".format(base_distance))
         self.diff_list = DiffList()
-        self.diff_list.append(init_val)
+        self.init_val=init_val
         self.period = period
         self.__end_flag = threading.Event()  # 线程结束的标志，这是线程安全的
         self.__init_record_diff_list()
@@ -123,12 +124,13 @@ class CarForward:
             self.car.set_power(self.speed)
             while not self.__end_flag.isSet():
                 bias = (self.kp * self.diff_list.get_val() + self.ki * self.diff_list.get_sum() +
-                        self.kd * self.diff_list.get_d()) * SIDE
+                        self.kd * self.diff_list.get_d()) * SIDE + self.init_val
                 pid_info = "p: {:.3f}".format(self.kp * self.diff_list.get_val()) + '\t' + "i: {:.3f}".format(
                     self.ki * self.diff_list.get_sum()) + '\t' + "d: {:.3f}".format(self.kd * self.diff_list.get_d())
                 logger.info("distance change: {:.1f}".format(self.diff_list.get_val()))
                 logger.debug(pid_info)
                 logger.info("set bias as: {:.3f}".format(bias))
+
                 self.car.set_expected_diff(bias)
                 self.car.stay(0.1)
         except Exception as e:
@@ -149,7 +151,7 @@ class CarForward:
 if __name__ == '__main__':
     try:
         f = CarForward(speed=100)
-        f.stay(3)
+        f.stay(16)
         f.stop()
     except Exception as e:
         logger.error(str(e))
