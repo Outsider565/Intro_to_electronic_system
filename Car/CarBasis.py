@@ -117,11 +117,11 @@ def gen_raw_data():
         for i in range(0, 101, 5):
             car.set_left_power(i)
             car.set_right_power(i)
-            car.stay(3)
+            car.stay(5)
             print(i, car.get_l_speed(), car.get_r_speed())
             car.set_left_power(0)
             car.set_right_power(0)
-            car.stay(1)
+            car.stay(1.5)
 #        for i in range(-100, 101):
 #           car.set_right_power(i)
 #           car.stay(3)
@@ -135,22 +135,4 @@ def gen_raw_data():
 
 
 if __name__ == '__main__':
-#c = CarBasis(0.1)
-# spd = 100
-#   c.set_both_power(spd)
-#   c.set_r_mode()
-#   while c.get_time() < 19:
-#       c.set_left_power(spd * (1 - min(max(c.get_l_round() - c.get_r_round(), 0), 1)))
-#       c.set_right_power(spd * (1 - min(max(c.get_r_round() - c.get_l_round(), 0), 1)))
-#       c.stay(0.1)
-#       print("Round:", c.get_l_round(), c.get_r_round())
-#       print("Power:", c.get_l_power(), c.get_r_power())
-    # while c.get_l_round()<13.3:
-    #    c.set_left_power(-1*spd)
-    #    c.set_right_power(spd)
-    #    c.stay(0.05)
-    #    print(c.get_l_round(),c.get_r_round())
-#   c.save_data()
-#   c.free()
-	gen_raw_data()
-	
+    gen_raw_data()

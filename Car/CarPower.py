@@ -4,8 +4,8 @@ import wiringpi
 import Carlog
 
 logger = Carlog.logger
-EA, I2, I1, EB, I4, I3 = (16, 19, 26, 13, 20, 21)
-FREQUENCY = 100 # PWM的调节频率
+EA, I2, I1, EB, I4, I3 = (16, 19, 26, 13, 21, 20)
+FREQUENCY = 100  # PWM的调节频率
 # COMPENSATOR是历史遗留代码，在新的调节过程中设置为0就行；
 # 原意是通过左(右)的power=设置值-COMPENSATOR，以期达到两侧速度相同的效果；
 # 但后来使用了PID进行自动闭环调节，因此此处可简单设为0

@@ -7,10 +7,10 @@ import CarCtrl
 import Carlog
 
 logger = Carlog.logger
-FACTOR = 7  # 排除超声意外情况的Threshold
+FACTOR = 10  # 排除超声意外情况的Threshold
 SIDE = 1  # 超声传感器是放在左边还是右边，只能为1或-1，左侧为1
 LIMIT = 10  # 如果测得的距离差小于该值，同意插入DiffList
-SIZE = 3  # 求当前位置时，选用SIZE个最近的距离差求平均值，越大越稳定，越小越灵敏 <=5
+SIZE = 2  # 求当前位置时，选用SIZE个最近的距离差求平均值，越大越稳定，越小越灵敏 <=5
 
 
 class DiffList:
@@ -80,7 +80,7 @@ class DiffList:
 
 
 class CarForward:
-    def __init__(self, period=0.1, kp=0.020, ki=0.004, kd=0.005, speed=100, init_val=0.2):
+    def __init__(self, period=0.1, kp=0.017, ki=0.005, kd=0.005, speed=100, init_val=0):
         """
         :param period: 整个调节的更新周期
         :param init_val: PID调节的初始量，一般设为0，如果遇到电池/开始没有放正的问题再进行调整
@@ -95,6 +95,7 @@ class CarForward:
         # 或许可以先把马达开到0.2预热啥的...
         # self.car.set_power(10)
         self.car.stay(1)
+        input("Wait for input(press w): ")
         base_distance = np.array(self.car.basis.dist_list).mean()
         logger.info("base distance：{:.1f}".format(base_distance))
         self.diff_list = DiffList()
@@ -150,7 +151,7 @@ class CarForward:
 if __name__ == '__main__':
     f = CarForward(speed=100)
     try:
-        f.stay(15)
+        f.stay(3.5)
     except Exception as e:
         logger.error(str(e))
     finally:
